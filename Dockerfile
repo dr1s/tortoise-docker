@@ -15,6 +15,8 @@ ARG SOURCE_REPO=https://github.com/Shyalya/tortoise-wow.git
 ARG SOURCE_REF=playerbots-integration-gh
 ARG CMAKE_BUILD_TYPE=Release
 ARG CMAKE_INSTALL_PREFIX=/opt/turtle
+ARG BUILD_JOBS=2
+ARG CPU_TARGET=x86-64-v2
 
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=UTC
@@ -39,14 +41,37 @@ RUN git clone --depth 1 --branch "${SOURCE_REF}" "${SOURCE_REPO}" tortoise-wow
 
 WORKDIR /src/tortoise-wow
 
+ARG EXTRACTORS_ONLY=OFF
+
+# The upstream build currently adds -march=native. That makes a published
+# image depend on the CPU that built it and can emit instructions unavailable
+# on otherwise supported hosts. Keep the image portable across x86-64 CPUs.
+RUN if grep -q -- '-march=native' CMakeLists.txt; then \
+        sed -i "s/-march=native/-march=${CPU_TARGET}/g" CMakeLists.txt; \
+    fi \
+    && if grep -q -- '-march=native' CMakeLists.txt; then \
+         echo "CMakeLists.txt still contains -march=native" >&2; \
+         exit 1; \
+       fi
+
 RUN cmake -B build \
         -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
         -DCMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}" \
         -DBUILD_PLAYERBOTS="${BUILD_PLAYERBOTS}" \
         -DUSE_EXTRACTORS="${USE_EXTRACTORS}" \
         -DALLOW_TURTLE_ADDONS=ON \
-    && cmake --build build -j"$(nproc)" \
-    && cmake --install build
+    && if [ "${EXTRACTORS_ONLY}" = "ON" ]; then \
+         cmake --build build -j"${BUILD_JOBS}" --target mapextractor vmapextractor vmap_assembler MoveMapGen \
+         && mkdir -p /opt/turtle/bin \
+         && find build -type f -executable \
+              \( -name mapextractor -o -name vmapextractor -o -name vmap_assembler -o -name MoveMapGen \) \
+              -exec cp -a '{}' /opt/turtle/bin/ ';'; \
+       else \
+         cmake --build build -j"${BUILD_JOBS}" \
+         && cmake --install build; \
+       fi \
+    && git rev-parse HEAD > /opt/turtle/SOURCE_COMMIT \
+    && rm -rf build
 
 # Keep SQL needed for first-time DB init + AutoUpdate path.
 RUN mkdir -p /opt/turtle/sql \
@@ -63,11 +88,13 @@ FROM ubuntu:${UBUNTU_VERSION} AS runtime
 
 ARG BUILD_PLAYERBOTS=ON
 ARG CMAKE_INSTALL_PREFIX=/opt/turtle
+ARG CPU_TARGET=x86-64-v2
 
 LABEL org.opencontainers.image.title="tortoise-docker" \
       org.opencontainers.image.description="Turtle WoW / Tortoise server (realmd + mangosd)" \
       org.opencontainers.image.source="https://github.com/Shyalya/tortoise-wow" \
-      org.opencontainers.image.licenses="GPL-2.0"
+      org.opencontainers.image.licenses="GPL-2.0" \
+      org.opencontainers.image.cpu.target="${CPU_TARGET}"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=UTC \
@@ -106,6 +133,7 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/init-db.sh /usr/local/bin/init-db.sh
 COPY docker/render-config.sh /usr/local/bin/render-config.sh
 COPY docker/repair-migrations.sh /usr/local/bin/repair-migrations.sh
+COPY docker/character-inventory-copy.sql /opt/turtle/sql/character-inventory-copy.sql
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
               /usr/local/bin/init-db.sh \

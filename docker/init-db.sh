@@ -57,6 +57,16 @@ fi
 echo "Creating databases and base schemas..."
 mysql_root < "${SQL_ROOT}/create_databases.sql"
 
+# BackupCharacterInventory copies rows with INSERT ... SELECT * and therefore
+# requires a structurally identical snapshot table in the character database.
+character_inventory_copy_sql="${SQL_ROOT}/character-inventory-copy.sql"
+if [[ ! -f "${character_inventory_copy_sql}" ]]; then
+  echo "Missing ${character_inventory_copy_sql}" >&2
+  exit 1
+fi
+echo "Ensuring character_inventory_copy exists..."
+mysql_root "${DB_CHAR}" < "${character_inventory_copy_sql}"
+
 echo "Creating application user '${DB_USER}' and grants..."
 mysql_root <<SQL
 CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';

@@ -6,7 +6,7 @@ The server work and install steps come from this video:
 
 **[Tortoise WoW / playerbots setup (YouTube)](https://www.youtube.com/watch?v=CNgkHs3btNE)**
 
-This repository ships a Compose file. CI builds and publishes the server images to GHCR. You do not build the server on your machine.
+This repository ships a Compose file. CI builds and publishes the server images to GHCR. The published binaries use a portable x86-64-v2 CPU target so the image does not depend on the instruction set of the CI runner.
 
 ## What you need
 
@@ -100,6 +100,20 @@ set realmlist 127.0.0.1
 
 Use the same host as `REALM_ADDRESS` in `.env`. Then log in with the account you created.
 
+### CPU compatibility and local builds
+
+If an older published image exits with code 132 (`SIGILL`), rebuild it locally with the same portable target and select it with `TURTLE_IMAGE`:
+
+```bash
+docker build \
+  --build-arg BUILD_PLAYERBOTS=ON \
+  --build-arg CPU_TARGET=x86-64-v2 \
+  -t tortoise-wow:playerbots-local .
+TURTLE_IMAGE=tortoise-wow:playerbots-local docker compose up -d
+```
+
+The `TURTLE_IMAGE` override is optional; without it, Compose uses the published image selected by `TAG`.
+
 ## Useful settings
 
 | Setting | Default | Meaning |
@@ -108,6 +122,7 @@ Use the same host as `REALM_ADDRESS` in `.env`. Then log in with the account you
 | `REALM_NAME` | `TurtleWoW` | Name of the realm in the client list |
 | `DATA_PATH` | `./data` | Folder with `dbc`, `maps`, `vmaps`, `mmaps` |
 | `TAG` | `playerbots` | Image variant (`playerbots` or `no-bots`) |
+| `TURTLE_IMAGE` | published image from `TAG` | Optional full image reference, useful for a local build |
 | `AI_PLAYERBOT_ENABLED` | `1` | Turn bots on or off (`playerbots` image only) |
 | `AI_MIN_RANDOM_BOTS` / `AI_MAX_RANDOM_BOTS` | `10` / `10` | How many random bots to keep online |
 

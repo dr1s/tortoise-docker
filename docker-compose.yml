@@ -2,14 +2,16 @@
 # Copy .env.example to .env and set secrets before starting.
 # Image: ghcr.io/nescabir/tortoise-docker — override tag with TAG=no-bots if needed.
 
-x-turtle-image: &turtle-image ghcr.io/nescabir/tortoise-docker:${TAG:-playerbots}
+# Override TURTLE_IMAGE with a locally built image when needed. Published
+# images use the portable CPU target configured by Dockerfile/CI.
+x-turtle-image: &turtle-image ${TURTLE_IMAGE:-ghcr.io/nescabir/tortoise-docker:${TAG:-playerbots}}
 
 services:
   db:
-    image: mariadb:11.8
+    image: mariadb:11.8@sha256:d9f7eb2637296652f24b484afd5d246f759f49f5babcadc6a9e344c9acb75fbf
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-changeme}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
       MARIADB_AUTO_UPGRADE: "1"
     command:
       - --character-set-server=utf8mb4
@@ -17,8 +19,6 @@ services:
     volumes:
       - db-data:/var/lib/mysql
       - ./docker/mariadb.cnf:/etc/mysql/conf.d/turtle.cnf:ro
-    ports:
-      - "${DB_PUBLISH_PORT:-3306}:3306"
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
@@ -34,9 +34,9 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 3306
-      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-changeme}
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
       DB_USER: ${DB_USER:-mangos}
-      DB_PASSWORD: ${DB_PASSWORD:-mangos}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
       DB_LOGIN: ${DB_LOGIN:-tw_logon}
       DB_WORLD: ${DB_WORLD:-tw_world}
       DB_CHAR: ${DB_CHAR:-tw_char}
@@ -61,12 +61,12 @@ services:
       DB_HOST: db
       DB_PORT: 3306
       DB_USER: ${DB_USER:-mangos}
-      DB_PASSWORD: ${DB_PASSWORD:-mangos}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
       DB_LOGIN: ${DB_LOGIN:-tw_logon}
       REALM_PORT: ${REALM_PORT:-3724}
       BIND_IP: "0.0.0.0"
     ports:
-      - "${REALM_PORT:-3724}:3724"
+      - "${GAME_BIND_IP:-127.0.0.1}:${REALM_PORT:-3724}:3724"
     command: ["realmd"]
 
   mangosd:
@@ -81,7 +81,7 @@ services:
       DB_HOST: db
       DB_PORT: 3306
       DB_USER: ${DB_USER:-mangos}
-      DB_PASSWORD: ${DB_PASSWORD:-mangos}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
       DB_LOGIN: ${DB_LOGIN:-tw_logon}
       DB_WORLD: ${DB_WORLD:-tw_world}
       DB_CHAR: ${DB_CHAR:-tw_char}
@@ -99,7 +99,7 @@ services:
       AI_MIN_RANDOM_BOTS: ${AI_MIN_RANDOM_BOTS:-10}
       AI_MAX_RANDOM_BOTS: ${AI_MAX_RANDOM_BOTS:-10}
     ports:
-      - "${WORLD_PORT:-8090}:8090"
+      - "${GAME_BIND_IP:-127.0.0.1}:${WORLD_PORT:-8090}:8090"
     volumes:
       - ${DATA_PATH:-./data}:/opt/turtle/data:ro
       - mangosd-logs:/opt/turtle/logs
