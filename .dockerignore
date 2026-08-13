@@ -1,11 +1,2 @@
-.git
-.github
 .env
-.env.*
-!.env.example
-data
-logs
-*.md
-docs
-agent-transcripts
-**/.DS_Store
+*.log

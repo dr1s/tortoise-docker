@@ -78,6 +78,7 @@ jobs:
             SOURCE_REF=${{ github.event.inputs.source_ref || 'playerbots-integration-gh' }}
             CMAKE_BUILD_TYPE=Release
             CMAKE_INSTALL_PREFIX=/opt/turtle
+            CPU_TARGET=x86-64-v2
           cache-from: type=gha,scope=${{ matrix.tag }}
           cache-to: type=gha,mode=max,scope=${{ matrix.tag }}
           provenance: false
