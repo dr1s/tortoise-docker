@@ -1,5 +1,6 @@
 .env
 data/
+config/
 logs/
 *.log
 .DS_Store

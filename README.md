@@ -132,6 +132,18 @@ Keep bot counts low for the first start. Raise them later in `.env`, then run:
 docker compose up -d mangosd
 ```
 
+## Editing server configs
+
+`mangosd.conf`, `realmd.conf`, `aiplayerbot.conf`, and `ahbot.conf` are written to `./config` on the host (or `CONFIG_PATH` from `.env`) the first time the stack starts.
+
+Edit any setting there directly — for example server rates, difficulty, or announce messages. Settings that also have a `.env` variable (see the table above) get overwritten from that variable on every start; everything else you edit is left as-is.
+
+After editing, restart the affected service:
+
+```bash
+docker compose up -d mangosd realmd
+```
+
 ## Common commands
 
 View logs:
