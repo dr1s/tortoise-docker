@@ -67,6 +67,8 @@ services:
       BIND_IP: "0.0.0.0"
     ports:
       - "${GAME_BIND_IP:-127.0.0.1}:${REALM_PORT:-3724}:3724"
+    volumes:
+      - ${CONFIG_PATH:-./config}:/opt/turtle/etc
     command: ["realmd"]
 
   mangosd:
@@ -102,6 +104,7 @@ services:
       - "${GAME_BIND_IP:-127.0.0.1}:${WORLD_PORT:-8090}:8090"
     volumes:
       - ${DATA_PATH:-./data}:/opt/turtle/data:ro
+      - ${CONFIG_PATH:-./config}:/opt/turtle/etc
       - mangosd-logs:/opt/turtle/logs
     command: ["mangosd"]
     # First start builds bot caches / travel data and can take a long time.

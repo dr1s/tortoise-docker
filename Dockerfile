@@ -17,6 +17,10 @@ ARG CMAKE_BUILD_TYPE=Release
 ARG CMAKE_INSTALL_PREFIX=/opt/turtle
 ARG BUILD_JOBS=2
 ARG CPU_TARGET=x86-64-v2
+# Resolved upstream commit SHA, passed in by CI. Declaring it right before the
+# clone RUN busts the layer cache whenever upstream actually moves, without
+# forcing a full rebuild when nothing changed (see issue #6).
+ARG SOURCE_COMMIT=""
 
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=UTC
@@ -37,7 +41,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /src
 
-RUN git clone --depth 1 --branch "${SOURCE_REF}" "${SOURCE_REPO}" tortoise-wow
+RUN echo "Cloning ${SOURCE_REPO}#${SOURCE_REF} @ ${SOURCE_COMMIT:-unresolved}" \
+    && git clone --depth 1 --branch "${SOURCE_REF}" "${SOURCE_REPO}" tortoise-wow
 
 WORKDIR /src/tortoise-wow
 
