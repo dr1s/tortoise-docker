@@ -38,7 +38,7 @@ Edit `.env`:
 2. Set `REALM_ADDRESS` to an address your game client can reach.
 3. Set `DATA_PATH` if your client data is not in `./data`.
 
-Use `127.0.0.1` for `REALM_ADDRESS` only when the client runs on the same machine. For another PC on your LAN, use your host LAN IP.
+Use `127.0.0.1` for `REALM_ADDRESS` only when the client runs on the same machine. For another PC on your LAN, use your host LAN IP **and** set `GAME_BIND_IP=0.0.0.0` in `.env` — by default the game ports are only published on `127.0.0.1`, so other machines cannot reach them even if `REALM_ADDRESS` points at your LAN IP.
 
 ### 3. Add client data
 
@@ -175,6 +175,7 @@ Volume names can include your Compose project name. Use `docker volume ls` to co
 | Empty world / no NPCs | First database import failed; check `docker compose logs db-init` |
 | No bots | Use `TAG=playerbots` and `AI_PLAYERBOT_ENABLED=1` |
 | Client crash: interface corrupt | Use the published image from this project; do not strip Turtle addons |
+| LAN client can't reach the realm | Set `GAME_BIND_IP=0.0.0.0` in `.env` (default `127.0.0.1` only accepts connections from the host itself), then `docker compose up -d` |
 
 ## Credits
 
