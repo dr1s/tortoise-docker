@@ -145,6 +145,8 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
               /usr/local/bin/render-config.sh \
               /usr/local/bin/repair-migrations.sh \
     && mkdir -p /opt/turtle/data /opt/turtle/logs /opt/turtle/run /var/lib/turtle-init \
+    && mkdir -p /opt/turtle/etc.dist \
+    && cp /opt/turtle/etc/*.conf.dist /opt/turtle/etc.dist/ \
     && chown -R turtle:turtle /opt/turtle /var/lib/turtle-init
 
 WORKDIR /opt/turtle/bin
