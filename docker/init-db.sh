@@ -91,11 +91,16 @@ for f in "${base_files[@]}"; do
 done
 
 echo "Applying database_updates with --force (duplicate keys expected)..."
-update_files=("${SQL_ROOT}"/database_updates/*.sql)
-for f in "${update_files[@]}"; do
-  echo "  -> $(basename "${f}")"
-  mysql_root --force "${DB_WORLD}" < "${f}" || true
-done
+
+# Find all .sql files, count directory depth, sort deepest first (then alphabetically), and process
+find "${SQL_ROOT}/database_updates" -type f -name "*.sql" \
+  | awk -F'/' '{print NF, $0}' \
+  | sort -k1,1nr -k2 \
+  | cut -d' ' -f2- \
+  | while IFS= read -r f; do
+      echo "  -> $(basename "${f}")"
+      mysql_root --force "${DB_WORLD}" < "${f}" || true
+    done
 
 # AutoUpdater keys applied rows by file SHA1 (not by name). Hash 'manual'
 # never matches, so mangosd would retry every update and die on duplicates.
@@ -111,6 +116,7 @@ done
 col_count="$(mysql_root -N -e "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='${DB_WORLD}' AND TABLE_NAME='spell_template' AND COLUMN_NAME='script_name';")"
 if [[ "${col_count}" != "1" ]]; then
   echo "WARNING: spell_template.script_name not found after migrations (got count=${col_count})." >&2
+  exit 0
 fi
 
 # Playerbot tables (only when this image was built with BUILD_PLAYERBOTS=ON)
