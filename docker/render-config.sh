@@ -2,6 +2,9 @@
 set -euo pipefail
 
 ETC="${TURTLE_HOME:-/opt/turtle}/etc"
+# Baked into the image at build time, separate from ETC so a CONFIG_PATH bind
+# mount over ETC (see docker-compose.yml) can't hide the .dist templates.
+ETC_DIST="${TURTLE_HOME:-/opt/turtle}/etc.dist"
 DATA_DIR="${DATA_DIR:-/opt/turtle/data}"
 LOGS_DIR="${LOGS_DIR:-/opt/turtle/logs}"
 SQL_DIR="${SQL_DIR:-/opt/turtle/sql}"
@@ -57,14 +60,14 @@ ensure_conf() {
 
 mkdir -p "${ETC}"
 
-ensure_conf "${ETC}/mangosd.conf.dist" "${ETC}/mangosd.conf"
-ensure_conf "${ETC}/realmd.conf.dist" "${ETC}/realmd.conf"
+ensure_conf "${ETC_DIST}/mangosd.conf.dist" "${ETC}/mangosd.conf"
+ensure_conf "${ETC_DIST}/realmd.conf.dist" "${ETC}/realmd.conf"
 
-if [[ -f "${ETC}/aiplayerbot.conf.dist" ]]; then
-  ensure_conf "${ETC}/aiplayerbot.conf.dist" "${ETC}/aiplayerbot.conf"
+if [[ -f "${ETC_DIST}/aiplayerbot.conf.dist" ]]; then
+  ensure_conf "${ETC_DIST}/aiplayerbot.conf.dist" "${ETC}/aiplayerbot.conf"
 fi
-if [[ -f "${ETC}/ahbot.conf.dist" ]]; then
-  ensure_conf "${ETC}/ahbot.conf.dist" "${ETC}/ahbot.conf"
+if [[ -f "${ETC_DIST}/ahbot.conf.dist" ]]; then
+  ensure_conf "${ETC_DIST}/ahbot.conf.dist" "${ETC}/ahbot.conf"
 fi
 
 # mangosd
