@@ -10,6 +10,8 @@ ARG UBUNTU_VERSION=22.04
 FROM ubuntu:${UBUNTU_VERSION} AS builder
 
 ARG BUILD_PLAYERBOTS=ON
+ARG BUILD_ELUNA=ON
+ARG ELUNA_LUA_VERSION=lua52
 ARG USE_EXTRACTORS=OFF
 ARG SOURCE_REPO=https://github.com/Shyalya/tortoise-wow.git
 ARG SOURCE_REF=playerbots-integration-gh
@@ -42,7 +44,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /src
 
 RUN echo "Cloning ${SOURCE_REPO}#${SOURCE_REF} @ ${SOURCE_COMMIT:-unresolved}" \
-    && git clone --depth 1 --branch "${SOURCE_REF}" "${SOURCE_REPO}" tortoise-wow
+    && git clone --depth 1 --branch "${SOURCE_REF}" "${SOURCE_REPO}" tortoise-wow \
+    &&  if [ "${BUILD_ELUNA}" = "ON" ]; then \
+            git -C tortoise-wow submodule update --init --recursive; \
+        fi
 
 WORKDIR /src/tortoise-wow
 
@@ -65,6 +70,8 @@ RUN cmake -B build \
         -DBUILD_PLAYERBOTS="${BUILD_PLAYERBOTS}" \
         -DUSE_EXTRACTORS="${USE_EXTRACTORS}" \
         -DALLOW_TURTLE_ADDONS=ON \
+        -DBUILD_ELUNA="${BUILD_ELUNA}" \
+        -DELUNA_LUA_VERSION="${ELUNA_LUA_VERSION}" \
     && if [ "${EXTRACTORS_ONLY}" = "ON" ]; then \
          cmake --build build -j"${BUILD_JOBS}" --target mapextractor vmapextractor vmap_assembler MoveMapGen \
          && mkdir -p /opt/turtle/bin \
