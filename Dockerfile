@@ -44,7 +44,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /src
 
 RUN echo "Cloning ${SOURCE_REPO}#${SOURCE_REF} @ ${SOURCE_COMMIT:-unresolved}" \
-    && git clone --depth 1 --branch "${SOURCE_REF}" "${SOURCE_REPO}" tortoise-wow \
+    && git clone --branch "${SOURCE_REF}" "${SOURCE_REPO}" tortoise-wow \
+    &&  if [ -n "${SOURCE_COMMIT}" ]; then \
+            git -C tortoise-wow checkout "${SOURCE_COMMIT}"; \
+        fi \
     &&  if [ "${BUILD_ELUNA}" = "ON" ]; then \
             git -C tortoise-wow submodule update --init --recursive; \
         fi
