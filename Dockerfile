@@ -40,6 +40,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         zlib1g-dev \
         libbz2-dev \
         pkg-config \
+        ccache \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
@@ -68,7 +69,14 @@ RUN if grep -q -- '-march=native' CMakeLists.txt; then \
          exit 1; \
        fi
 
-RUN cmake -B build \
+ARG CCACHE_CPP2="true"
+ARG CCACHE_DIR="/ccache"
+ARG CCACHE_MAXSIZE="1G"
+ARG CCACHE_SLOPPINESS="pch_defines,time_macros,include_file_mtime"
+ARG CCACHE_COMPILERCHECK="content"
+
+RUN --mount=type=cache,target=/ccache,sharing=locked \
+    cmake -B build \
         -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
         -DCMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}" \
         -DBUILD_PLAYERBOTS="${BUILD_PLAYERBOTS}" \
@@ -77,6 +85,8 @@ RUN cmake -B build \
         -DBUILD_ELUNA="${BUILD_ELUNA}" \
         -DELUNA_LUA_VERSION="${ELUNA_LUA_VERSION}" \
         -DMODULES="${BUILD_MODULES}" \
+        -DCMAKE_C_COMPILER_LAUNCHER="ccache" \
+        -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" \
     && if [ "${EXTRACTORS_ONLY}" = "ON" ]; then \
          cmake --build build -j"${BUILD_JOBS}" --target mapextractor vmapextractor vmap_assembler MoveMapGen \
          && mkdir -p /opt/turtle/bin \
