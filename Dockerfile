@@ -12,6 +12,7 @@ FROM ubuntu:${UBUNTU_VERSION} AS builder
 ARG BUILD_PLAYERBOTS=ON
 ARG BUILD_ELUNA=ON
 ARG ELUNA_LUA_VERSION=lua52
+ARG BUILD_MODULES=static
 ARG USE_EXTRACTORS=OFF
 ARG SOURCE_REPO=https://github.com/Shyalya/tortoise-wow.git
 ARG SOURCE_REF=playerbots-integration-gh
@@ -75,6 +76,7 @@ RUN cmake -B build \
         -DALLOW_TURTLE_ADDONS=ON \
         -DBUILD_ELUNA="${BUILD_ELUNA}" \
         -DELUNA_LUA_VERSION="${ELUNA_LUA_VERSION}" \
+        -DMODULES="${BUILD_MODULES}" \
     && if [ "${EXTRACTORS_ONLY}" = "ON" ]; then \
          cmake --build build -j"${BUILD_JOBS}" --target mapextractor vmapextractor vmap_assembler MoveMapGen \
          && mkdir -p /opt/turtle/bin \
