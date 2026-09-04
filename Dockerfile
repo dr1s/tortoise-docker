@@ -56,6 +56,14 @@ RUN echo "Cloning ${SOURCE_REPO}#${SOURCE_REF} @ ${SOURCE_COMMIT:-unresolved}" \
 
 WORKDIR /src/tortoise-wow
 
+# COPY src/src /src/tortoise-wow/src
+# COPY src/cmake /src/tortoise-wow/cmake
+# COPY src/dep /src/tortoise-wow/dep
+# COPY src/modules /src/tortoise-wow/modules
+# COPY src/sql /src/tortoise-wow/sql
+# COPY src/tools /src/tortoise-wow/tools
+# COPY src/CMakeLists.txt /src/tortoise-wow/CMakeLists.txt
+
 ARG EXTRACTORS_ONLY=OFF
 
 # The upstream build currently adds -march=native. That makes a published
@@ -69,9 +77,8 @@ RUN if grep -q -- '-march=native' CMakeLists.txt; then \
          exit 1; \
        fi
 
-ARG CCACHE_CPP2="true"
 ARG CCACHE_DIR="/ccache"
-ARG CCACHE_MAXSIZE="1G"
+ARG CCACHE_MAXSIZE="10G"
 ARG CCACHE_SLOPPINESS="pch_defines,time_macros,include_file_mtime"
 ARG CCACHE_COMPILERCHECK="content"
 
@@ -155,12 +162,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && groupadd --gid 1000 turtle \
     && useradd --uid 1000 --gid turtle --home-dir /opt/turtle --shell /usr/sbin/nologin turtle
 
-COPY --from=builder /opt/turtle /opt/turtle
+COPY --chown=1000:1000 --from=builder /opt/turtle /opt/turtle
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/init-db.sh /usr/local/bin/init-db.sh
 COPY docker/render-config.sh /usr/local/bin/render-config.sh
 COPY docker/repair-migrations.sh /usr/local/bin/repair-migrations.sh
-COPY docker/character-inventory-copy.sql /opt/turtle/sql/character-inventory-copy.sql
+COPY --chown=1000:1000 docker/character-inventory-copy.sql /opt/turtle/sql/character-inventory-copy.sql
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
               /usr/local/bin/init-db.sh \
@@ -169,7 +176,7 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
     && mkdir -p /opt/turtle/data /opt/turtle/logs /opt/turtle/run /var/lib/turtle-init \
     && mkdir -p /opt/turtle/etc.dist \
     && cp /opt/turtle/etc/*.conf.dist /opt/turtle/etc.dist/ \
-    && chown -R turtle:turtle /opt/turtle /var/lib/turtle-init
+    && chown -R turtle:turtle /opt/turtle/data /opt/turtle/etc.dist /opt/turtle/run /opt/turtle/logs /var/lib/turtle-init
 
 WORKDIR /opt/turtle/bin
 
