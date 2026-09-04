@@ -103,9 +103,9 @@ RUN --mount=type=cache,target=/ccache,sharing=locked \
 # Keep SQL needed for first-time DB init + AutoUpdate path.
 RUN mkdir -p /opt/turtle/sql \
     && cp -a sql/create_databases.sql sql/base sql/database_updates /opt/turtle/sql/ \
-    && if [ -d src/modules/PlayerBots/sql ]; then \
+    && if [ -d modules/mod-playerbots/sql ]; then \
          mkdir -p /opt/turtle/sql/playerbots \
-         && cp -a src/modules/PlayerBots/sql/. /opt/turtle/sql/playerbots/; \
+         && cp -a modules/mod-playerbots/sql/. /opt/turtle/sql/playerbots; \
        fi
 
 # -----------------------------------------------------------------------------
