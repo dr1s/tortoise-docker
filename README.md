@@ -22,7 +22,7 @@ The images do not include client data. You extract that data from your game clie
 ### 1. Get the Compose files
 
 ```bash
-git clone https://github.com/Nescabir/tortoise-docker.git
+git clone https://github.com/dr1s/tortoise-docker.git
 cd tortoise-docker
 ```
 
@@ -194,5 +194,6 @@ Volume names can include your Compose project name. Use `docker volume ls` to co
 - Setup walkthrough: [YouTube video](https://www.youtube.com/watch?v=CNgkHs3btNE)
 - Server source: [Shyalya/tortoise-wow](https://github.com/Shyalya/tortoise-wow)
 - Install notes: [INSTALL-LINUX.md](https://github.com/Shyalya/tortoise-wow/blob/playerbots-integration-gh/INSTALL-LINUX.md)
+- Dockerfile by Nescabir: [Repo](https://github.com/Nescabir/tortoise-docker)
 
 Server code stays under the upstream project license. This repository only provides the Docker packaging.
