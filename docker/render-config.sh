@@ -70,6 +70,17 @@ if [[ -f "${ETC_DIST}/ahbot.conf.dist" ]]; then
   ensure_conf "${ETC_DIST}/ahbot.conf.dist" "${ETC}/ahbot.conf"
 fi
 
+mkdir -p "${ETC}/modules"
+for module_dir in /src/tortoise-wow/modules/*/; do
+    [ -d "${module_dir}conf" ] || continue
+    for dist_file in "${module_dir}conf/"*.conf.dist; do
+        [ -f "${dist_file}" ] || continue
+        BASENAME="$(basename "${dist_file}")"
+        ensure_conf "${dist_file}" "${ETC}/modules/${BASENAME}"
+    done
+done
+
+
 # mangosd
 set_conf "${ETC}/mangosd.conf" "LoginDatabase.Info" "\"$(DB_INFO "${DB_LOGIN}")\""
 set_conf "${ETC}/mangosd.conf" "WorldDatabase.Info" "\"$(DB_INFO "${DB_WORLD}")\""
