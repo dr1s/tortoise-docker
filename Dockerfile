@@ -94,7 +94,8 @@ RUN --mount=type=cache,target=/ccache,sharing=locked \
               -exec cp -a '{}' /opt/turtle/bin/ ';'; \
        else \
          cmake --build build -j"${BUILD_JOBS}" \
-         && cmake --install build; \
+         && cmake --install build \
+         && cp -a /src/tortoise-wow/modules /opt/turtle/modules; \
        fi \
     && git rev-parse HEAD > /opt/turtle/SOURCE_COMMIT \
     && rm -rf build
