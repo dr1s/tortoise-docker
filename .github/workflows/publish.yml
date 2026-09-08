@@ -34,10 +34,9 @@ jobs:
         include:
           - tag: playerbots
             build_playerbots: "ON"
+            build_modules: "static"
+            build_eluna: "ON"
             is_latest: true
-          - tag: no-bots
-            build_playerbots: "OFF"
-            is_latest: false
 
     steps:
       - name: Checkout
@@ -85,6 +84,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_PLAYERBOTS=${{ matrix.build_playerbots }}
+            BUILD_MODULES=${{ matrix.build_modules }}
+            BUILD_ELUNE=${{ matrix.build_eluna }}
             USE_EXTRACTORS=OFF
             SOURCE_REPO=https://github.com/Shyalya/tortoise-wow.git
             SOURCE_REF=${{ github.event.inputs.source_ref || 'playerbots-integration-gh' }}
