@@ -2,7 +2,7 @@
 # Tortoise WoW (Shyalya/tortoise-wow) — Ubuntu 22.04 build for GHCR + compose.
 # Build-arg BUILD_PLAYERBOTS controls whether the playerbots module is compiled in.
 
-ARG UBUNTU_VERSION=22.04
+ARG UBUNTU_VERSION=24.04
 
 # -----------------------------------------------------------------------------
 # Builder
@@ -131,17 +131,17 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
-        libace-7.0.6 \
-        libboost-atomic1.74.0 \
-        libboost-chrono1.74.0 \
-        libboost-date-time1.74.0 \
-        libboost-filesystem1.74.0 \
-        libboost-iostreams1.74.0 \
-        libboost-program-options1.74.0 \
-        libboost-regex1.74.0 \
-        libboost-serialization1.74.0 \
-        libboost-system1.74.0 \
-        libboost-thread1.74.0 \
+        libace-7.1.2 \
+        libboost-atomic1.83.0 \
+        libboost-chrono1.83.0 \
+        libboost-date-time1.83.0 \
+        libboost-filesystem1.83.0 \
+        libboost-iostreams1.83.0 \
+        libboost-program-options1.83.0 \
+        libboost-regex1.83.0 \
+        libboost-serialization1.83.0 \
+        libboost-system1.83.0 \
+        libboost-thread1.83.0 \
         libmysqlclient21 \
         libssl3 \
         zlib1g \
@@ -152,6 +152,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         tini \
         gosu \
     && rm -rf /var/lib/apt/lists/* \
+    && userdel --remove ubuntu \
     && groupadd --gid 1000 turtle \
     && useradd --uid 1000 --gid turtle --home-dir /opt/turtle --shell /usr/sbin/nologin turtle
 
