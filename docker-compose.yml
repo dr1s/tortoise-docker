@@ -70,6 +70,13 @@ services:
     volumes:
       - ${CONFIG_PATH:-./config}:/opt/turtle/etc
     command: ["realmd"]
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/3724"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
 
   mangosd:
     image: *turtle-image
@@ -109,6 +116,12 @@ services:
     command: ["mangosd"]
     # First start builds bot caches / travel data and can take a long time.
     stop_grace_period: 2m
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8090"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 300s
 
 volumes:
   db-data:
