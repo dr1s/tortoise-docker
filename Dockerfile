@@ -148,7 +148,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libreadline8 \
         libncurses6 \
         mariadb-client \
-        tini
+        tini \
     && rm -rf /var/lib/apt/lists/* \
     && userdel --remove ubuntu \
     && groupadd --gid 1000 turtle \
