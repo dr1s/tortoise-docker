@@ -18,10 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - tag: playerbots
-            build_playerbots: "ON"
-          - tag: no-bots
-            build_playerbots: "OFF"
+          - tag: modules
+            build_modules: "static"
+          - tag: no-modules
+            build_modules: "disabled"
 
     steps:
       - name: Checkout
@@ -48,10 +48,10 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BUILD_PLAYERBOTS=${{ matrix.build_playerbots }}
+            BUILD_MODULES=${{ matrix.build_modules }}
             USE_EXTRACTORS=OFF
-            SOURCE_REPO=https://github.com/Shyalya/tortoise-wow.git
-            SOURCE_REF=playerbots-integration-gh
+            SOURCE_REPO=https://github.com/Penqle/tortoise-wow.git
+            SOURCE_REF=main
             CMAKE_BUILD_TYPE=Release
             CMAKE_INSTALL_PREFIX=/opt/turtle
           cache-from: type=gha,scope=${{ matrix.tag }}

@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-# Tortoise WoW (Shyalya/tortoise-wow) — Ubuntu 22.04 build for GHCR + compose.
+# Tortoise WoW (penqle/tortoise-wow) — Ubuntu 24.04 build for GHCR + compose.
 # Build-arg BUILD_PLAYERBOTS controls whether the playerbots module is compiled in.
 
 ARG UBUNTU_VERSION=24.04
@@ -9,13 +9,10 @@ ARG UBUNTU_VERSION=24.04
 # -----------------------------------------------------------------------------
 FROM ubuntu:${UBUNTU_VERSION} AS builder
 
-ARG BUILD_PLAYERBOTS=ON
-ARG BUILD_ELUNA=ON
-ARG ELUNA_LUA_VERSION=lua52
 ARG BUILD_MODULES=static
 ARG USE_EXTRACTORS=OFF
-ARG SOURCE_REPO=https://github.com/Shyalya/tortoise-wow.git
-ARG SOURCE_REF=playerbots-integration-gh
+ARG SOURCE_REPO=https://github.com/Penqle/tortoise-wow.git
+ARG SOURCE_REF=main
 ARG CMAKE_BUILD_TYPE=Release
 ARG CMAKE_INSTALL_PREFIX=/opt/turtle
 ARG BUILD_JOBS=2
@@ -49,12 +46,30 @@ RUN echo "Cloning ${SOURCE_REPO}#${SOURCE_REF} @ ${SOURCE_COMMIT:-unresolved}" \
     && git clone --branch "${SOURCE_REF}" "${SOURCE_REPO}" tortoise-wow \
     &&  if [ -n "${SOURCE_COMMIT}" ]; then \
             git -C tortoise-wow checkout "${SOURCE_COMMIT}"; \
-        fi \
-    &&  if [ "${BUILD_ELUNA}" = "ON" ]; then \
-            git -C tortoise-wow submodule update --init --recursive; \
         fi
 
 WORKDIR /src/tortoise-wow
+
+COPY docker/modules.conf modules.conf
+
+RUN set -eux; \
+    if [ "${BUILD_MODULES}" != "disabled" ]; then \
+        while IFS='|' read -r MODULE_URL MODULE_NAME MODULE_REF; do \
+            case "${MODULE_URL}" in \
+                ''|'#'*) continue ;; \
+            esac; \
+            git clone --depth 1 --branch "${MODULE_REF}" "${MODULE_URL}" "modules/${MODULE_NAME}"; \
+        done < modules.conf; \
+    fi
+
+# COPY src/.git .git
+# COPY src/src src
+# COPY src/cmake cmake
+# COPY src/dep dep
+# COPY src/modules modules
+# COPY src/sql sql
+# COPY src/tools tools
+# COPY src/CMakeLists.txt CMakeLists.txt
 
 ARG EXTRACTORS_ONLY=OFF
 
@@ -75,14 +90,12 @@ ARG CCACHE_SLOPPINESS="pch_defines,time_macros,include_file_mtime"
 ARG CCACHE_COMPILERCHECK="content"
 
 RUN --mount=type=cache,target=/ccache,sharing=locked \
-    cmake -B build \
+    ccache -z \
+    && cmake -B build \
         -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
         -DCMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}" \
-        -DBUILD_PLAYERBOTS="${BUILD_PLAYERBOTS}" \
         -DUSE_EXTRACTORS="${USE_EXTRACTORS}" \
         -DALLOW_TURTLE_ADDONS=ON \
-        -DBUILD_ELUNA="${BUILD_ELUNA}" \
-        -DELUNA_LUA_VERSION="${ELUNA_LUA_VERSION}" \
         -DMODULES="${BUILD_MODULES}" \
         -DCMAKE_C_COMPILER_LAUNCHER="ccache" \
         -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" \
@@ -96,36 +109,31 @@ RUN --mount=type=cache,target=/ccache,sharing=locked \
          cmake --build build -j"${BUILD_JOBS}" \
          && cmake --install build; \
        fi \
+    && ccache -s \
     && git rev-parse HEAD > /opt/turtle/SOURCE_COMMIT \
     && rm -rf build
 
 # Keep SQL needed for first-time DB init + AutoUpdate path.
 RUN mkdir -p /opt/turtle/sql \
-    && cp -a sql/create_databases.sql sql/base sql/database_updates /opt/turtle/sql/ \
-    && if [ -d modules/mod-playerbots/sql ]; then \
-         mkdir -p /opt/turtle/sql/playerbots \
-         && cp -a modules/mod-playerbots/sql/. /opt/turtle/sql/playerbots; \
-       fi
+    && cp -a sql/create_databases.sql sql/base sql/database_updates /opt/turtle/sql/
 
 # -----------------------------------------------------------------------------
 # Runtime
 # -----------------------------------------------------------------------------
 FROM ubuntu:${UBUNTU_VERSION} AS runtime
 
-ARG BUILD_PLAYERBOTS=ON
 ARG CMAKE_INSTALL_PREFIX=/opt/turtle
 ARG CPU_TARGET=x86-64-v2
 
 LABEL org.opencontainers.image.title="tortoise-docker" \
       org.opencontainers.image.description="Turtle WoW / Tortoise server (realmd + mangosd)" \
-      org.opencontainers.image.source="https://github.com/Shyalya/tortoise-wow" \
+      org.opencontainers.image.source="https://github.com/Penqle/tortoise-wow" \
       org.opencontainers.image.licenses="GPL-2.0" \
       org.opencontainers.image.cpu.target="${CPU_TARGET}"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=UTC \
     TURTLE_HOME=/opt/turtle \
-    PLAYERBOTS_BUILT=${BUILD_PLAYERBOTS} \
     PATH=/opt/turtle/bin:$PATH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \

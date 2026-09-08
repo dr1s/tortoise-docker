@@ -4,7 +4,7 @@
 
 # Override TURTLE_IMAGE with a locally built image when needed. Published
 # images use the portable CPU target configured by Dockerfile/CI.
-x-turtle-image: &turtle-image ${TURTLE_IMAGE:-ghcr.io/dr1s/tortoise-docker:${TAG:-playerbots}}
+x-turtle-image: &turtle-image ${TURTLE_IMAGE:-ghcr.io/dr1s/tortoise-docker:${TAG:-modules}}
 
 services:
   db:

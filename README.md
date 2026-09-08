@@ -1,10 +1,6 @@
 # Tortoise WoW (Docker)
 
-Run a private [Turtle WoW](https://turtle-wow.org/) server with Docker. This stack uses [Shyalya/tortoise-wow](https://github.com/Shyalya/tortoise-wow) with playerbots.
-
-The server work and install steps come from this video:
-
-**[Tortoise WoW / playerbots setup (YouTube)](https://www.youtube.com/watch?v=CNgkHs3btNE)**
+Run a private [Turtle WoW](https://turtle-wow.org/) server with Docker. This stack uses [Penqle/tortoise-wow](https://github.com/Penqle/tortoise-wow) with [TortoiseBots](https://github.com/PiotrZadka/TortoiseBots).
 
 This repository ships a Compose file. CI builds and publishes the server images to GHCR. The published binaries use a portable x86-64-v2 CPU target so the image does not depend on the instruction set of the CI runner.
 
@@ -15,8 +11,7 @@ This repository ships a Compose file. CI builds and publishes the server images 
 - Client data folders: `dbc`, `maps`, `vmaps`, `mmaps`
 - Several GB of free disk space
 
-The images do not include client data. You extract that data from your game client. The video and the [Linux install guide](https://github.com/Shyalya/tortoise-wow/blob/playerbots-integration-gh/INSTALL-LINUX.md) show how.
-
+The images do not include client data. You extract that data from your game client. T
 ## Quick start
 
 ### 1. Get the Compose files
@@ -74,7 +69,7 @@ Wait until the log shows:
 World server is up and running
 ```
 
-The first start with playerbots is slow. The server builds bot gear data before it is ready. Do not create an account before that line appears.
+The first start with modules is slow. The server builds bot gear data before it is ready. Do not create an account before that line appears.
 
 ### 5. Create a game account
 
@@ -106,10 +101,10 @@ If an older published image exits with code 132 (`SIGILL`), rebuild it locally w
 
 ```bash
 docker build \
-  --build-arg BUILD_PLAYERBOTS=ON \
+  --build-arg BUILD_MODULES=static \
   --build-arg CPU_TARGET=x86-64-v2 \
-  -t tortoise-wow:playerbots-local .
-TURTLE_IMAGE=tortoise-wow:playerbots-local docker compose up -d
+  -t tortoise-wow:modules-local .
+TURTLE_IMAGE=tortoise-wow:modules-local docker compose up -d
 ```
 
 The `TURTLE_IMAGE` override is optional; without it, Compose uses the published image selected by `TAG`.
@@ -121,10 +116,8 @@ The `TURTLE_IMAGE` override is optional; without it, Compose uses the published 
 | `REALM_ADDRESS` | `127.0.0.1` | Host the client uses to reach the world server |
 | `REALM_NAME` | `TurtleWoW` | Name of the realm in the client list |
 | `DATA_PATH` | `./data` | Folder with `dbc`, `maps`, `vmaps`, `mmaps` |
-| `TAG` | `playerbots` | Image variant (`playerbots` or `no-bots`) |
+| `TAG` | `modules` | Image variant (`modules` or `no-modules`) |
 | `TURTLE_IMAGE` | published image from `TAG` | Optional full image reference, useful for a local build |
-| `AI_PLAYERBOT_ENABLED` | `1` | Turn bots on or off (`playerbots` image only) |
-| `AI_MIN_RANDOM_BOTS` / `AI_MAX_RANDOM_BOTS` | `10` / `10` | How many random bots to keep online |
 
 Keep bot counts low for the first start. Raise them later in `.env`, then run:
 
@@ -185,14 +178,14 @@ Volume names can include your Compose project name. Use `docker volume ls` to co
 | Realm list is empty or offline | Check that `realmd` and `mangosd` are up: `docker compose ps` |
 | Client hangs after you pick the realm | Set `REALM_ADDRESS` to an IP the client can reach; world port is `8090` |
 | Empty world / no NPCs | First database import failed; check `docker compose logs db-init` |
-| No bots | Use `TAG=playerbots` and `AI_PLAYERBOT_ENABLED=1` |
+| No modukes | Use `TAG=no-modules` |
 | Client crash: interface corrupt | Use the published image from this project; do not strip Turtle addons |
 | LAN client can't reach the realm | Set `GAME_BIND_IP=0.0.0.0` in `.env` (default `127.0.0.1` only accepts connections from the host itself), then `docker compose up -d` |
 
 ## Credits
 
 - Setup walkthrough: [YouTube video](https://www.youtube.com/watch?v=CNgkHs3btNE)
-- Server source: [Shyalya/tortoise-wow](https://github.com/Shyalya/tortoise-wow)
+- Server source: [Shyalya/tortoise-wow](https://github.com/Penqle/tortoise-wow)
 - Install notes: [INSTALL-LINUX.md](https://github.com/Shyalya/tortoise-wow/blob/playerbots-integration-gh/INSTALL-LINUX.md)
 - Dockerfile by Nescabir: [Repo](https://github.com/Nescabir/tortoise-docker)
 

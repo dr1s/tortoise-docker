@@ -20,7 +20,6 @@ REALM_ADDRESS="${REALM_ADDRESS:-127.0.0.1}"
 WORLD_PORT="${WORLD_PORT:-8090}"
 REALM_ID="${REALM_ID:-1}"
 
-PLAYERBOTS_BUILT="${PLAYERBOTS_BUILT:-ON}"
 
 if [[ -z "${DB_ROOT_PASSWORD}" ]]; then
   echo "DB_ROOT_PASSWORD (or MYSQL_ROOT_PASSWORD) is required." >&2
@@ -117,23 +116,6 @@ col_count="$(mysql_root -N -e "SELECT COUNT(*) FROM information_schema.COLUMNS W
 if [[ "${col_count}" != "1" ]]; then
   echo "WARNING: spell_template.script_name not found after migrations (got count=${col_count})." >&2
   exit 0
-fi
-
-# Playerbot tables (only when this image was built with BUILD_PLAYERBOTS=ON)
-normalized="$(echo "${PLAYERBOTS_BUILT}" | tr '[:lower:]' '[:upper:]')"
-if [[ "${normalized}" == "ON" || "${normalized}" == "1" || "${normalized}" == "TRUE" ]]; then
-  PB_SQL="${SQL_ROOT}/playerbots"
-  if [[ -d "${PB_SQL}" ]]; then
-    echo "Importing playerbots world SQL..."
-    cat "${PB_SQL}"/world/*.sql "${PB_SQL}"/world/classic/*.sql | mysql_root "${DB_WORLD}"
-    echo "Importing playerbots characters SQL..."
-    cat "${PB_SQL}"/characters/*.sql | mysql_root "${DB_CHAR}"
-  else
-    echo "PLAYERBOTS_BUILT=${PLAYERBOTS_BUILT} but ${PB_SQL} is missing." >&2
-    exit 1
-  fi
-else
-  echo "Skipping playerbots SQL (PLAYERBOTS_BUILT=${PLAYERBOTS_BUILT})."
 fi
 
 echo "Inserting realmlist row..."

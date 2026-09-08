@@ -2,7 +2,7 @@ name: Publish to GHCR
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, dev, penqle]
     paths-ignore:
       - "**.md"
       - ".env.example"
@@ -12,9 +12,9 @@ on:
   workflow_dispatch:
     inputs:
       source_ref:
-        description: "Git branch or tag of Shyalya/tortoise-wow to build"
+        description: "Git branch or tag of Penqle/tortoise-wow to build"
         required: false
-        default: "playerbots-integration-gh"
+        default: "main"
 
 permissions:
   contents: read
@@ -32,11 +32,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - tag: playerbots
-            build_playerbots: "ON"
+          - tag: penqle-modules
             build_modules: "static"
-            build_eluna: "ON"
-            is_latest: true
+            is_latest: false
+          - tag: penqle-no-modules
+            build_modules: "disabled"
+            is_latest: false
 
     steps:
       - name: Checkout
@@ -45,11 +46,11 @@ jobs:
       - name: Resolve upstream source commit
         id: source
         run: |
-          REF="${{ github.event.inputs.source_ref || 'playerbots-integration-gh' }}"
-          SHA="$(git ls-remote https://github.com/Shyalya/tortoise-wow.git "refs/heads/${REF}" | cut -f1)"
+          REF="${{ github.event.inputs.source_ref || 'main' }}"
+          SHA="$(git ls-remote https://github.com/Penqle/tortoise-wow.git "refs/heads/${REF}" | cut -f1)"
           SHORT_SHA="${SHA:0:6}"
           if [ -z "${SHA}" ]; then
-            echo "Could not resolve ref ${REF} on Shyalya/tortoise-wow" >&2
+            echo "Could not resolve ref ${REF} on Penqle/tortoise-wow" >&2
             exit 1
           fi
           echo "Resolved ${REF} -> ${SHA}"
@@ -85,12 +86,10 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BUILD_PLAYERBOTS=${{ matrix.build_playerbots }}
             BUILD_MODULES=${{ matrix.build_modules }}
-            BUILD_ELUNE=${{ matrix.build_eluna }}
             USE_EXTRACTORS=OFF
-            SOURCE_REPO=https://github.com/Shyalya/tortoise-wow.git
-            SOURCE_REF=${{ github.event.inputs.source_ref || 'playerbots-integration-gh' }}
+            SOURCE_REPO=https://github.com/Penqle/tortoise-wow.git
+            SOURCE_REF=${{ github.event.inputs.source_ref || 'main' }}
             SOURCE_COMMIT=${{ steps.source.outputs.sha }}
             CMAKE_BUILD_TYPE=Release
             CMAKE_INSTALL_PREFIX=/opt/turtle
