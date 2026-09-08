@@ -99,7 +99,5 @@ if [[ -f "${ETC}/aiplayerbot.conf" ]]; then
 fi
 
 mkdir -p "${LOGS_DIR}"
-# Writable for the turtle user (configs may be regenerated each start).
-chown -R turtle:turtle "${ETC}" "${LOGS_DIR}" 2>/dev/null || true
 
 echo "Configs rendered under ${ETC}"

@@ -11,19 +11,18 @@ case "${ROLE}" in
   realmd)
     /usr/local/bin/render-config.sh
     echo "Starting realmd..."
-    exec gosu turtle /opt/turtle/bin/realmd -c /opt/turtle/etc/realmd.conf "$@"
+    exec /opt/turtle/bin/realmd -c /opt/turtle/etc/realmd.conf "$@"
     ;;
   mangosd)
     /usr/local/bin/render-config.sh
     RUN_DIR="${TURTLE_HOME:-/opt/turtle}/run"
     FIFO="${MANGOSD_FIFO:-${RUN_DIR}/mangosd.in}"
     mkdir -p "$(dirname "${FIFO}")"
-    chown turtle:turtle "$(dirname "${FIFO}")"
     rm -f "${FIFO}"
     # Open the FIFO as the same user that owns it. Creating it in sticky /tmp,
     # chowning to turtle, then opening as root fails when fs.protected_fifos=1.
     echo "Starting mangosd (console FIFO: ${FIFO})..."
-    exec gosu turtle bash -c '
+    exec bash -c '
       set -euo pipefail
       FIFO="$1"
       shift
