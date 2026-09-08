@@ -94,8 +94,7 @@ RUN --mount=type=cache,target=/ccache,sharing=locked \
               -exec cp -a '{}' /opt/turtle/bin/ ';'; \
        else \
          cmake --build build -j"${BUILD_JOBS}" \
-         && cmake --install build \
-         && cp -a /src/tortoise-wow/modules /opt/turtle/modules; \
+         && cmake --install build; \
        fi \
     && git rev-parse HEAD > /opt/turtle/SOURCE_COMMIT \
     && rm -rf build
@@ -157,6 +156,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && useradd --uid 1000 --gid turtle --home-dir /opt/turtle --shell /usr/sbin/nologin turtle
 
 COPY --chown=1000:1000 --from=builder /opt/turtle /opt/turtle
+COPY --chown=1000:1000 --from=builder /src/tortoise-wow/modules /src/tortoise-wow/modules
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/init-db.sh /usr/local/bin/init-db.sh
 COPY docker/render-config.sh /usr/local/bin/render-config.sh
