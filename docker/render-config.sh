@@ -25,13 +25,6 @@ BIND_IP="${BIND_IP:-0.0.0.0}"
 
 LOG_SQL="${LOG_SQL:-0}"
 AUTO_UPDATE="${DATABASE_AUTOUPDATE_ENABLED:-1}"
-LFT_BOTFILL="${LFT_BOTFILL_ENABLE:-1}"
-SOLO_DUNGEON_REPOP="${SOLO_DUNGEON_REPOP_ALIVE_ENABLE:-1}"
-LEECH_ENABLE="${LEECH_ENABLE:-1}"
-
-AI_PLAYERBOT_ENABLED="${AI_PLAYERBOT_ENABLED:-1}"
-AI_MIN_RANDOM_BOTS="${AI_MIN_RANDOM_BOTS:-10}"
-AI_MAX_RANDOM_BOTS="${AI_MAX_RANDOM_BOTS:-10}"
 
 DB_INFO() {
   local db="$1"
@@ -63,9 +56,6 @@ mkdir -p "${ETC}"
 ensure_conf "${ETC_DIST}/mangosd.conf.dist" "${ETC}/mangosd.conf"
 ensure_conf "${ETC_DIST}/realmd.conf.dist" "${ETC}/realmd.conf"
 
-if [[ -f "${ETC_DIST}/aiplayerbot.conf.dist" ]]; then
-  ensure_conf "${ETC_DIST}/aiplayerbot.conf.dist" "${ETC}/aiplayerbot.conf"
-fi
 if [[ -f "${ETC_DIST}/ahbot.conf.dist" ]]; then
   ensure_conf "${ETC_DIST}/ahbot.conf.dist" "${ETC}/ahbot.conf"
 fi
@@ -76,6 +66,7 @@ for module_dir in /src/tortoise-wow/modules/*/; do
     for dist_file in "${module_dir}conf/"*.conf.dist; do
         [ -f "${dist_file}" ] || continue
         BASENAME="$(basename "${dist_file}")"
+        BASENAME="${BASENAME%.dist}"
         ensure_conf "${dist_file}" "${ETC}/modules/${BASENAME}"
     done
 done
@@ -94,20 +85,12 @@ set_conf "${ETC}/mangosd.conf" "RealmID" "${REALM_ID}"
 set_conf "${ETC}/mangosd.conf" "LogSQL" "${LOG_SQL}"
 set_conf "${ETC}/mangosd.conf" "Database.AutoUpdate.Enabled" "${AUTO_UPDATE}"
 set_conf "${ETC}/mangosd.conf" "Database.AutoUpdate.Path" "\"${SQL_DIR}/\""
-set_conf "${ETC}/mangosd.conf" "LFT.BotFill.Enable" "${LFT_BOTFILL}"
-set_conf "${ETC}/mangosd.conf" "SoloDungeonRepopAlive.Enable" "${SOLO_DUNGEON_REPOP}"
-set_conf "${ETC}/mangosd.conf" "Leech.Enable" "${LEECH_ENABLE}"
 
 # realmd (note: key name has no dots between LoginDatabase and Info)
 set_conf "${ETC}/realmd.conf" "LoginDatabaseInfo" "\"$(DB_INFO "${DB_LOGIN}")\""
 set_conf "${ETC}/realmd.conf" "RealmServerPort" "${REALM_PORT}"
 set_conf "${ETC}/realmd.conf" "BindIP" "\"${BIND_IP}\""
 
-if [[ -f "${ETC}/aiplayerbot.conf" ]]; then
-  set_conf "${ETC}/aiplayerbot.conf" "AiPlayerbot.Enabled" "${AI_PLAYERBOT_ENABLED}"
-  set_conf "${ETC}/aiplayerbot.conf" "AiPlayerbot.MinRandomBots" "${AI_MIN_RANDOM_BOTS}"
-  set_conf "${ETC}/aiplayerbot.conf" "AiPlayerbot.MaxRandomBots" "${AI_MAX_RANDOM_BOTS}"
-fi
 
 mkdir -p "${LOGS_DIR}"
 
