@@ -2,7 +2,7 @@ name: Publish to GHCR
 
 on:
   push:
-    branches: [main, master, dev, penqle]
+    branches: [penqle, shyalya, tortoisebots]
     paths-ignore:
       - "**.md"
       - ".env.example"
