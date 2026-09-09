@@ -66,6 +66,7 @@ for module_dir in /src/tortoise-wow/modules/*/; do
     for dist_file in "${module_dir}conf/"*.conf.dist; do
         [ -f "${dist_file}" ] || continue
         BASENAME="$(basename "${dist_file}")"
+        BASENAME="${BASENAME%.dist}"
         ensure_conf "${dist_file}" "${ETC}/modules/${BASENAME}"
     done
 done
