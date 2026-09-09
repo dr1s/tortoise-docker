@@ -84,6 +84,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          target: runtime
           build-args: |
             BUILD_PLAYERBOTS=${{ matrix.build_playerbots }}
             BUILD_MODULES=${{ matrix.build_modules }}
