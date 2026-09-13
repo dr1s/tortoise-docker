@@ -2,7 +2,7 @@ name: Publish to GHCR
 
 on:
   push:
-    branches: [main, master, dev, penqle]
+    branches: [main, master, tortoisebots]
     paths-ignore:
       - "**.md"
       - ".env.example"
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       source_ref:
-        description: "Git branch or tag of Penqle/tortoise-wow to build"
+        description: "Git branch or tag of tortoise-wow/tortoise-wow to build"
         required: false
         default: "main"
 
@@ -32,10 +32,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - tag: penqle-modules
+          - tag: modules
             build_modules: "static"
-            is_latest: false
-          - tag: penqle-no-modules
+            is_latest: true
+          - tag: no-modules
             build_modules: "disabled"
             is_latest: false
 
@@ -47,10 +47,10 @@ jobs:
         id: source
         run: |
           REF="${{ github.event.inputs.source_ref || 'main' }}"
-          SHA="$(git ls-remote https://github.com/Penqle/tortoise-wow.git "refs/heads/${REF}" | cut -f1)"
+          SHA="$(git ls-remote https://github.com/tortoise-wow/tortoise-wow.git "refs/heads/${REF}" | cut -f1)"
           SHORT_SHA="${SHA:0:6}"
           if [ -z "${SHA}" ]; then
-            echo "Could not resolve ref ${REF} on Penqle/tortoise-wow" >&2
+            echo "Could not resolve ref ${REF} on tortoise-wow/tortoise-wow" >&2
             exit 1
           fi
           echo "Resolved ${REF} -> ${SHA}"
@@ -75,7 +75,7 @@ jobs:
           tags: |
             type=raw,value=${{ matrix.tag }}
             type=raw,value=${{ matrix.tag }}-${{ steps.source.outputs.short_sha }}
-            type=raw,value=latest,enable=${{ matrix.is_latest && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') }}
+            type=raw,value=latest,enable=${{ matrix.is_latest && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -89,7 +89,7 @@ jobs:
           build-args: |
             BUILD_MODULES=${{ matrix.build_modules }}
             USE_EXTRACTORS=OFF
-            SOURCE_REPO=https://github.com/Penqle/tortoise-wow.git
+            SOURCE_REPO=https://github.com/tortoise-wow/tortoise-wow.git
             SOURCE_REF=${{ github.event.inputs.source_ref || 'main' }}
             SOURCE_COMMIT=${{ steps.source.outputs.sha }}
             CMAKE_BUILD_TYPE=Release
