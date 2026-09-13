@@ -14,7 +14,7 @@ on:
       source_ref:
         description: "Git branch or tag of tortoise-wow/tortoise-wow to build"
         required: false
-        default: "main"
+        default: "bot-helpers"
 
 permissions:
   contents: read
@@ -32,11 +32,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - tag: modules
+          - tag: tortoisebots
             build_modules: "static"
-            is_latest: true
-          - tag: no-modules
-            build_modules: "disabled"
             is_latest: false
 
     steps:
@@ -90,7 +87,7 @@ jobs:
             BUILD_MODULES=${{ matrix.build_modules }}
             USE_EXTRACTORS=OFF
             SOURCE_REPO=https://github.com/tortoise-wow/tortoise-wow.git
-            SOURCE_REF=${{ github.event.inputs.source_ref || 'main' }}
+            SOURCE_REF=${{ github.event.inputs.source_ref || 'bot-helpers' }}
             SOURCE_COMMIT=${{ steps.source.outputs.sha }}
             CMAKE_BUILD_TYPE=Release
             CMAKE_INSTALL_PREFIX=/opt/turtle
