@@ -1,8 +1,35 @@
 # Tortoise WoW (Docker)
 
-Run a private [Turtle WoW](https://turtle-wow.org/) server with Docker. This stack uses [Penqle/tortoise-wow](https://github.com/Penqle/tortoise-wow) with [TortoiseBots](https://github.com/PiotrZadka/TortoiseBots).
+Run a private [Turtle WoW](https://turtle-wow.org/) server with Docker. This stack uses [tortoise-wow/tortoise-wow](https://github.com/tortoise-wow/tortoise-wow).
 
 This repository ships a Compose file. CI builds and publishes the server images to GHCR. The published binaries use a portable x86-64-v2 CPU target so the image does not depend on the instruction set of the CI runner.
+
+> [!IMPORTANT]
+> ## Available server variants
+>
+> This repository provides **three different server variants**, each maintained on its own branch and published as Docker images:
+>
+> | Branch | Source / Features | Docker image |
+> |---|---|---|
+> | `master` | Upstream  Tortoise WoW | `modules` or `no-modules` |
+> | `tortoisebots` | **[TortoiseBots](https://github.com/Sagiroth/TortoiseBots)** and extra modules | `tortoisebots` |
+>
+> The Compose configuration uses the image corresponding to the selected variant. Check out the branch you want to use before starting the server.
+>
+> Each image is published with two types of tags:
+> - A variant tag, such as `modules`, `no-modules` or `tortoisebots`
+> - A commit-specific tag, containing the 6-character short SHA of the upstream source commit used to build the image, such as `modules-a1b2c3`
+>
+>
+> For example:
+> - modules
+> - modules-a1b2c3
+> - no-modules
+> - no-modules-a1b2c3
+> - tortoisebots
+> - tortoisebots-a1b2c3
+>
+> The commit-specific tags allow you to pin an image to the exact upstream source commit used for the build, while the variant tags track the latest published image for that variant.
 
 ## What you need
 
@@ -187,6 +214,6 @@ Volume names can include your Compose project name. Use `docker volume ls` to co
 - Setup walkthrough: [YouTube video](https://www.youtube.com/watch?v=CNgkHs3btNE)
 - Server source: [Shyalya/tortoise-wow](https://github.com/Penqle/tortoise-wow)
 - Install notes: [INSTALL-LINUX.md](https://github.com/Shyalya/tortoise-wow/blob/playerbots-integration-gh/INSTALL-LINUX.md)
-- Dockerfile by Nescabir: [Repo](https://github.com/Nescabir/tortoise-docker)
+- Docker setup by Nescabir: [Repo](https://github.com/Nescabir/tortoise-docker)
 
 Server code stays under the upstream project license. This repository only provides the Docker packaging.
