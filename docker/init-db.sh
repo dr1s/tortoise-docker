@@ -196,10 +196,23 @@ ensure_migrations_module_column() {
     done
 }
 
+refresh_realmlist() {
+  echo "Refreshing realmlist..."
+  mysql_root <<SQL
+DELETE FROM ${DB_LOGIN}.realmlist;
+
+INSERT INTO ${DB_LOGIN}.realmlist
+  (id, name, address, port, icon, realmflags, timezone, allowedSecurityLevel, realmbuilds)
+VALUES
+  (${REALM_ID}, '${REALM_NAME}', '${REALM_ADDRESS}', ${WORLD_PORT}, 0, 0, 1, 0, '7272');
+SQL
+}
+
 if [[ -f "${MARKER_FILE}" ]]; then
   echo "Init marker found (${MARKER_FILE}); skipping first-run database setup."
   apply_missing_migrations
   apply_module_migrations_all
+  refresh_realmlist
   exit 0
 fi
 
@@ -260,15 +273,7 @@ if [[ "${col_count}" != "1" ]]; then
 fi
 
 apply_module_migrations_all
-
-echo "Inserting realmlist row..."
-mysql_root <<SQL
-DELETE FROM ${DB_LOGIN}.realmlist;
-INSERT INTO ${DB_LOGIN}.realmlist
-  (id, name, address, port, icon, realmflags, timezone, allowedSecurityLevel, realmbuilds)
-VALUES
-  (${REALM_ID}, '${REALM_NAME}', '${REALM_ADDRESS}', ${WORLD_PORT}, 0, 0, 1, 0, '7272');
-SQL
+refresh_realmlist
 
 mkdir -p "${MARKER_DIR}"
 date -u +"%Y-%m-%dT%H:%M:%SZ" > "${MARKER_FILE}"
