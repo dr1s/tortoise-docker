@@ -11,19 +11,17 @@ This repository ships a Compose file. CI builds and publishes the server images 
 >
 > | Branch | Source / Features | Docker image |
 > |---|---|---|
-> | `master` | Upstream  Tortoise WoW | `modules` or `no-modules` |
-> | `tortoisebots` | **[TortoiseBots](https://github.com/Sagiroth/TortoiseBots)** and extra modules | `tortoisebots` |
+> | `master` | Upstream Tortoise WoW without modules from [modules.conf](docker/modules.conf) | `no-modules` |
+> | `master` | Upstream Tortoise WoW with **[TortoiseBots](https://github.com/Sagiroth/TortoiseBots)** and extra [modules](docker/modules.conf) | `modules` |
 >
 > The Compose configuration uses the image corresponding to the selected variant. Check out the branch you want to use before starting the server.
 >
 > Each image is published with two types of tags:
-> - A variant tag, such as `modules`, `no-modules` or `tortoisebots`
-> - A commit-specific tag, containing the 6-character short SHA of the upstream source commit used to build the image, such as `modules-a1b2c3`
+> - A variant tag, such as `no-modules` or `modules`
+> - A commit-specific tag, containing the 6-character short SHA of the upstream source commit used to build the image, such as `no-modules-a1b2c3`
 >
 >
 > For example:
-> - modules
-> - modules-a1b2c3
 > - no-modules
 > - no-modules-a1b2c3
 > - tortoisebots
