@@ -43,7 +43,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Resolve upstream source commit
+      - name: Resolve upstream source and module commits
         id: source
         run: |
           REF="${{ github.event.inputs.source_ref || 'main' }}"
@@ -53,9 +53,26 @@ jobs:
             echo "Could not resolve ref ${REF} on tortoise-wow/tortoise-wow" >&2
             exit 1
           fi
-          echo "Resolved ${REF} -> ${SHA}"
+          echo "Resolved upstream ${REF} -> ${SHA}"
+
+          SOURCE_COMMIT="${SHA}"
+          while IFS='|' read -r MODULE_URL MODULE_NAME MODULE_REF; do
+            case "${MODULE_URL}" in
+              ''|'#'*) continue ;;
+            esac
+            MODULE_SHA="$(git ls-remote "${MODULE_URL}" "refs/heads/${MODULE_REF}" | cut -f1)"
+            if [ -z "${MODULE_SHA}" ]; then
+              echo "Could not resolve ref ${MODULE_REF} for module ${MODULE_NAME} at ${MODULE_URL}" >&2
+              exit 1
+            fi
+            echo "Resolved module ${MODULE_NAME} ${MODULE_REF} -> ${MODULE_SHA}"
+            SOURCE_COMMIT="${SOURCE_COMMIT}-${MODULE_SHA}"
+          done < docker/modules.conf
+
+          echo "SOURCE_COMMIT=${SOURCE_COMMIT}"
           echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
           echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "source_commit=${SOURCE_COMMIT}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -91,7 +108,7 @@ jobs:
             USE_EXTRACTORS=OFF
             SOURCE_REPO=https://github.com/tortoise-wow/tortoise-wow.git
             SOURCE_REF=${{ github.event.inputs.source_ref || 'main' }}
-            SOURCE_COMMIT=${{ steps.source.outputs.sha }}
+            SOURCE_COMMIT=${{ steps.source.outputs.source_commit }}
             CMAKE_BUILD_TYPE=Release
             CMAKE_INSTALL_PREFIX=/opt/turtle
             CPU_TARGET=x86-64-v2
