@@ -153,6 +153,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libreadline8 \
         libncurses6 \
         mariadb-client \
+        procps \
         tini \
     && rm -rf /var/lib/apt/lists/* \
     && userdel --remove ubuntu \
@@ -165,12 +166,14 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/init-db.sh /usr/local/bin/init-db.sh
 COPY docker/render-config.sh /usr/local/bin/render-config.sh
 COPY docker/repair-migrations.sh /usr/local/bin/repair-migrations.sh
+COPY docker/healthcheck.sh /usr/local/bin/healthcheck.sh
 COPY --chown=1000:1000 docker/character-inventory-copy.sql /opt/turtle/sql/character-inventory-copy.sql
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
               /usr/local/bin/init-db.sh \
               /usr/local/bin/render-config.sh \
               /usr/local/bin/repair-migrations.sh \
+              /usr/local/bin/healthcheck.sh \
     && mkdir -p /opt/turtle/data /opt/turtle/logs /opt/turtle/run /var/lib/turtle-init \
     && mkdir -p /opt/turtle/etc.dist \
     && cp /opt/turtle/etc/*.conf.dist /opt/turtle/etc.dist/ \
@@ -179,6 +182,9 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
 WORKDIR /opt/turtle/bin
 
 EXPOSE 3724/tcp 8090/tcp
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
+  CMD ["/usr/local/bin/healthcheck.sh"]
 
 USER turtle
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
