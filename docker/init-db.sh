@@ -199,12 +199,20 @@ ensure_migrations_module_column() {
 refresh_realmlist() {
   echo "Refreshing realmlist..."
   mysql_root <<SQL
-DELETE FROM ${DB_LOGIN}.realmlist;
-
 INSERT INTO ${DB_LOGIN}.realmlist
   (id, name, address, port, icon, realmflags, timezone, allowedSecurityLevel, realmbuilds)
 VALUES
-  (${REALM_ID}, '${REALM_NAME}', '${REALM_ADDRESS}', ${WORLD_PORT}, 0, 0, 1, 0, '7272');
+  (${REALM_ID}, '${REALM_NAME}', '${REALM_ADDRESS}', ${WORLD_PORT}, 0, 0, 1, 0, '7272')
+AS new
+ON DUPLICATE KEY UPDATE
+  name = new.name,
+  address = new.address,
+  port = new.port,
+  icon = new.icon,
+  realmflags = new.realmflags,
+  timezone = new.timezone,
+  allowedSecurityLevel = new.allowedSecurityLevel,
+  realmbuilds = new.realmbuilds;
 SQL
 }
 
