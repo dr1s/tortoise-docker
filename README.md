@@ -11,8 +11,8 @@ This repository ships a Compose file. CI builds and publishes the server images 
 >
 > | Branch | Source / Features | Docker image |
 > |---|---|---|
-> | `master` | Upstream Tortoise WoW without modules from [modules.conf](docker/modules.conf) | `no-modules` |
-> | `master` | Upstream Tortoise WoW with **[TortoiseBots](https://github.com/Sagiroth/TortoiseBots)** and extra [modules](docker/modules.conf) | `modules` |
+> | `master` | Upstream Tortoise WoW without modules from [modules.conf](tortoise-wow/docker/modules.conf) | `no-modules` |
+> | `master` | Upstream Tortoise WoW with **[TortoiseBots](https://github.com/Sagiroth/TortoiseBots)** and extra [modules](tortoise-wow/docker/modules.conf) | `modules` |
 >
 > The Compose configuration uses the image corresponding to the selected variant. Check out the branch you want to use before starting the server.
 >
@@ -128,15 +128,46 @@ set realmlist 127.0.0.1
 
 Use the same host as `REALM_ADDRESS` in `.env`. Then log in with the account you created.
 
+### 7. Web registration (optional)
+
+The stack can include a [WoWSimpleRegistration](https://github.com/masterking32/WoWSimpleRegistration) service. It is opt-in via the `registration` Compose profile.
+
+Set at least these variables in `.env`:
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `REGISTRATION_PORT` | `8080` | Host port for the registration web UI |
+| `REGISTRATION_BIND_IP` | `127.0.0.1` | Host IP to bind the registration port |
+| `WSR_BASEURL` | `http://localhost` | Public URL used by the registration page |
+| `WSR_PAGE_TITLE` | `Turtle WoW Registration` | Page title |
+| `WSR_LANGUAGE` | `english` | Default language |
+| `WSR_TEMPLATE` | `light` | UI template |
+
+Start the stack with the registration profile:
+
+```bash
+docker compose --profile registration up -d
+```
+
+Then open `http://<REGISTRATION_BIND_IP>:<REGISTRATION_PORT>` (e.g. `http://127.0.0.1:8080`) to create accounts through the web interface.
+
+For Podman:
+
+```bash
+podman-compose -f docker-compose.yml -f podman-compose.override.yml --profile registration up -d
+```
+
 ### CPU compatibility and local builds
 
 If an older published image exits with code 132 (`SIGILL`), rebuild it locally with the same portable target and select it with `TURTLE_IMAGE`:
 
 ```bash
+cd tortoise-wow
 docker build \
   --build-arg BUILD_MODULES=static \
   --build-arg CPU_TARGET=x86-64-v2 \
   -t tortoise-wow:modules-local .
+cd ..
 TURTLE_IMAGE=tortoise-wow:modules-local docker compose up -d
 ```
 

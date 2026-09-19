@@ -10,7 +10,7 @@ services:
   db:
     volumes:
       - db-data:/var/lib/mysql
-      - ./docker/mariadb.cnf:/etc/mysql/conf.d/turtle.cnf:ro,Z
+      - ./tortoise-wow/docker/mariadb.cnf:/etc/mysql/conf.d/turtle.cnf:ro,Z
 
   realmd:
     userns_mode: keep-id

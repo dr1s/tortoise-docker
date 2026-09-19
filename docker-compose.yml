@@ -4,6 +4,10 @@
 
 # Override TURTLE_IMAGE with a locally built image when needed. Published
 # images use the portable CPU target configured by Dockerfile/CI.
+x-turtle-build: &turtle-build
+  context: ./tortoise-wow
+  dockerfile: Dockerfile
+
 x-turtle-image: &turtle-image ${TURTLE_IMAGE:-ghcr.io/dr1s/tortoise-wow-container:${TAG:-modules}}
 
 services:
@@ -18,7 +22,7 @@ services:
       - --collation-server=utf8mb4_general_ci
     volumes:
       - db-data:/var/lib/mysql
-      - ./docker/mariadb.cnf:/etc/mysql/conf.d/turtle.cnf:ro
+      - ./tortoise-wow/docker/mariadb.cnf:/etc/mysql/conf.d/turtle.cnf:ro
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
@@ -27,6 +31,7 @@ services:
       start_period: 30s
 
   db-init:
+    build: *turtle-build
     image: *turtle-image
     depends_on:
       db:
@@ -54,6 +59,7 @@ services:
       disable: true
 
   realmd:
+    build: *turtle-build
     image: *turtle-image
     depends_on:
       db-init:
@@ -80,6 +86,7 @@ services:
 
 
   mangosd:
+    build: *turtle-build
     image: *turtle-image
     depends_on:
       db-init:
@@ -116,6 +123,33 @@ services:
       timeout: 5s
       retries: 3
       start_period: 300s
+
+  registration:
+    profiles:
+      - registration
+    build:
+      context: ./WoWSimpleRegistration
+      dockerfile: Dockerfile
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-mangos}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      DB_LOGIN: ${DB_LOGIN:-tw_logon}
+      DB_CHAR: ${DB_CHAR:-tw_char}
+      REALM_ID: ${REALM_ID:-1}
+      REALM_NAME: ${REALM_NAME:-TurtleWoW}
+      REALM_ADDRESS: ${REALM_ADDRESS:-127.0.0.1}
+      WSR_BASEURL: ${WSR_BASEURL:-http://localhost}
+      WSR_PAGE_TITLE: ${WSR_PAGE_TITLE:-Turtle WoW Registration}
+      WSR_LANGUAGE: ${WSR_LANGUAGE:-english}
+      WSR_TEMPLATE: ${WSR_TEMPLATE:-light}
+    ports:
+      - "${REGISTRATION_BIND_IP:-127.0.0.1}:${REGISTRATION_PORT:-8080}:80"
 
 volumes:
   db-data:
