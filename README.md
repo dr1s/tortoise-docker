@@ -7,7 +7,7 @@ This repository ships a Compose file. CI builds and publishes the server images 
 > [!IMPORTANT]
 > ## Available server variants
 >
-> This repository provides **three different server variants**, each maintained on its own branch and published as Docker images:
+> This repository provides **two different server variants**, each maintained on its own branch and published as Docker images:
 >
 > | Branch | Source / Features | Docker image |
 > |---|---|---|
@@ -24,8 +24,10 @@ This repository ships a Compose file. CI builds and publishes the server images 
 > For example:
 > - no-modules
 > - no-modules-a1b2c3
-> - tortoisebots
-> - tortoisebots-a1b2c3
+> - modules
+> - modules-a1b2c3
+> - extractors
+> - extractors-a1b2c3
 >
 > The commit-specific tags allow you to pin an image to the exact upstream source commit used for the build, while the variant tags track the latest published image for that variant.
 
@@ -133,6 +135,32 @@ TURTLE_IMAGE=tortoise-wow:modules-local docker compose up -d
 ```
 
 The `TURTLE_IMAGE` override is optional; without it, Compose uses the published image selected by `TAG`.
+
+### Extracting client data
+
+The published `extractors` image contains the tools needed to generate `dbc`, `maps`, `vmaps`, and `mmaps` from a Turtle WoW client. Mount your client directory into the container and run each extractor:
+
+```bash
+CLIENT_PATH=/path/to/your/TurtleWoW
+
+mkdir -p ./data
+
+docker run --rm \
+  -v "${CLIENT_PATH}:/client:ro" \
+  -v "$(pwd)/data:/opt/turtle/data" \
+  -u "$(id -u):$(id -g)" \
+  ghcr.io/dr1s/tortoise-docker:extractors \
+  bash -c '
+    cd /client &&
+    /opt/turtle/bin/mapextractor &&
+    /opt/turtle/bin/vmapextractor &&
+    /opt/turtle/bin/vmap_assembler &&
+    /opt/turtle/bin/MoveMapGen &&
+    mv dbc maps vmaps mmaps /opt/turtle/data/
+  '
+```
+
+The extracted files are written to `./data`. Once extraction is complete, point `DATA_PATH` in your `.env` at that folder and start the stack.
 
 ## Useful settings
 

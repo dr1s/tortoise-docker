@@ -33,9 +33,15 @@ jobs:
         include:
           - tag: modules
             build_modules: "static"
+            extractors_only: "OFF"
             is_latest: true
           - tag: no-modules
             build_modules: "disabled"
+            extractors_only: "OFF"
+            is_latest: false
+          - tag: extractors
+            build_modules: "disabled"
+            extractors_only: "ON"
             is_latest: false
 
     steps:
@@ -109,6 +115,7 @@ jobs:
           build-args: |
             BUILD_MODULES=${{ matrix.build_modules }}
             BUILD_JOBS=${{ steps.cpus.outputs.count }}
+            EXTRACTORS_ONLY=${{ matrix.extractors_only }}
             USE_EXTRACTORS=OFF
             SOURCE_REPO=https://github.com/tortoise-wow/tortoise-wow.git
             SOURCE_REF=${{ github.event.inputs.source_ref || 'main' }}

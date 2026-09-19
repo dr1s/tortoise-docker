@@ -88,10 +88,12 @@ ARG CCACHE_COMPILERCHECK="content"
 
 RUN --mount=type=cache,target=/ccache,sharing=locked \
     ccache -z \
+    && USE_EXTRACTORS_ARG="${USE_EXTRACTORS}" \
+    && if [ "${EXTRACTORS_ONLY}" = "ON" ]; then USE_EXTRACTORS_ARG="ON"; fi \
     && cmake -B build \
         -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
         -DCMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}" \
-        -DUSE_EXTRACTORS="${USE_EXTRACTORS}" \
+        -DUSE_EXTRACTORS="${USE_EXTRACTORS_ARG}" \
         -DALLOW_TURTLE_ADDONS=ON \
         -DMODULES="${BUILD_MODULES}" \
         -DCMAKE_C_COMPILER_LAUNCHER="ccache" \
@@ -189,7 +191,9 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
               /usr/local/bin/healthcheck.sh \
     && mkdir -p /opt/turtle/data /opt/turtle/logs /opt/turtle/run /var/lib/turtle-init \
     && mkdir -p /opt/turtle/etc.dist \
-    && cp /opt/turtle/etc/*.conf.dist /opt/turtle/etc.dist/ \
+    && if [ -d /opt/turtle/etc ]; then \
+         cp /opt/turtle/etc/*.conf.dist /opt/turtle/etc.dist/; \
+       fi \
     && chown -R turtle:turtle /opt/turtle/data \
                               /opt/turtle/etc.dist \
                               /opt/turtle/run \
