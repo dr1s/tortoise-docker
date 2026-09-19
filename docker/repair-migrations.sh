@@ -26,15 +26,21 @@ if [[ "${#files[@]}" -eq 0 ]]; then
   exit 1
 fi
 
-echo "Clearing old migration rows..."
-mysql_cmd -e "DELETE FROM ${DB_WORLD}.migrations;"
+echo "Ensuring migrations.Module column exists..."
+mysql_cmd -e "
+  ALTER TABLE \`${DB_WORLD}\`.migrations
+  ADD COLUMN IF NOT EXISTS Module VARCHAR(255) NOT NULL DEFAULT '';
+" || true
 
-echo "Inserting ${#files[@]} rows with SHA1 hashes..."
+echo "Clearing old core migration rows..."
+mysql_cmd -e "DELETE FROM \`${DB_WORLD}\`.migrations WHERE Module = '' OR Module IS NULL;"
+
+echo "Inserting ${#files[@]} core migration rows with SHA1 hashes..."
 for f in "${files[@]}"; do
   n="$(basename "${f}" .sql)"
   h="$(sha1sum "${f}" | awk '{ print toupper($1) }')"
-  mysql_cmd -e "INSERT INTO ${DB_WORLD}.migrations (Name, Hash, AppliedAt) VALUES ('${n}','${h}',NOW());"
+  mysql_cmd -e "INSERT INTO \`${DB_WORLD}\`.migrations (Name, Module, Hash, AppliedAt) VALUES ('${n}','','${h}',NOW());"
 done
 
-count="$(mysql_cmd -N -e "SELECT COUNT(*) FROM ${DB_WORLD}.migrations;")"
+count="$(mysql_cmd -N -e "SELECT COUNT(*) FROM \`${DB_WORLD}\`.migrations;")"
 echo "Done. migrations rows: ${count}"
