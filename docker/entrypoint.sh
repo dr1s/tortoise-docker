@@ -31,8 +31,11 @@ case "${ROLE}" in
       exec /opt/turtle/bin/mangosd -c /opt/turtle/etc/mangosd.conf "$@" <&3
     ' bash "${FIFO}" "$@"
     ;;
-  bash|sh)
-    exec "$@"
+  bash)
+    exec bash "$@"
+    ;;
+  sh)
+    exec sh "$@"
     ;;
   *)
     echo "Unknown role: ${ROLE}" >&2
