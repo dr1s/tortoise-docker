@@ -45,14 +45,14 @@ done
 echo "MariaDB is ready."
 
 # Discover core migration files, sorted deepest-first then alphabetically.
+# find -printf and sort -z keep the sort stable even if paths contain spaces.
 shopt -s nullglob
 update_files=()
-while IFS= read -r f; do
+while IFS= read -r -d '' f; do
   [[ -n "${f}" ]] && update_files+=("${f}")
-done < <(find "${SQL_ROOT}/database_updates" -type f -name "*.sql" \
-  | awk -F'/' '{print NF, $0}' \
-  | sort -k1,1nr -k2 \
-  | cut -d' ' -f2-)
+done < <(find "${SQL_ROOT}/database_updates" -type f -name "*.sql" -printf '%d %p\0' \
+  | sort -z -k1,1nr -k2 \
+  | cut -z -d' ' -f2-)
 
 record_migration() {
   local target_db="${1}"
