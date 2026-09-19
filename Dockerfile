@@ -138,7 +138,7 @@ FROM ubuntu:${UBUNTU_VERSION} AS runtime
 ARG CMAKE_INSTALL_PREFIX=/opt/turtle
 ARG CPU_TARGET=x86-64-v2
 
-LABEL org.opencontainers.image.title="tortoise-docker" \
+LABEL org.opencontainers.image.title="tortoise-wow-container" \
       org.opencontainers.image.description="Turtle WoW / Tortoise server (realmd + mangosd)" \
       org.opencontainers.image.source="https://github.com/Penqle/tortoise-wow" \
       org.opencontainers.image.licenses="GPL-2.0" \

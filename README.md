@@ -1,6 +1,6 @@
-# Tortoise WoW (Docker)
+# Tortoise WoW (Docker/Podman)
 
-Run a private [Turtle WoW](https://turtle-wow.org/) server with Docker. This stack uses [tortoise-wow/tortoise-wow](https://github.com/tortoise-wow/tortoise-wow).
+Run a private [Turtle WoW](https://turtle-wow.org/) server with Docker/Podman. This stack uses [tortoise-wow/tortoise-wow](https://github.com/tortoise-wow/tortoise-wow).
 
 This repository ships a Compose file. CI builds and publishes the server images to GHCR. The published binaries use a portable x86-64-v2 CPU target so the image does not depend on the instruction set of the CI runner.
 
@@ -33,19 +33,19 @@ This repository ships a Compose file. CI builds and publishes the server images 
 
 ## What you need
 
-- Docker Desktop (or Docker Engine with Compose v2)
+- Docker Desktop (or Docker Engine with Compose v2) or [Podman](https://podman.io/) with [podman-compose](https://github.com/containers/podman-compose)
 - A Turtle WoW **1.18.1** client (**build 7272**)
 - Client data folders: `dbc`, `maps`, `vmaps`, `mmaps`
 - Several GB of free disk space
 
-The images do not include client data. You extract that data from your game client. T
+The images do not include client data. You extract that data from your game client.
 ## Quick start
 
 ### 1. Get the Compose files
 
 ```bash
-git clone https://github.com/dr1s/tortoise-docker.git
-cd tortoise-docker
+git clone https://github.com/dr1s/tortoise-wow-container.git
+cd tortoise-wow-container
 ```
 
 ### 2. Create your settings file
@@ -155,7 +155,7 @@ docker run --rm \
   -v "${CLIENT_PATH}:/client" \
   -v "$(pwd)/data:/opt/turtle/data" \
   -u "$(id -u):$(id -g)" \
-  ghcr.io/dr1s/tortoise-docker:extractors \
+  ghcr.io/dr1s/tortoise-wow-container:extractors \
   bash -c '
     cd /client &&
     /opt/turtle/bin/mapextractor &&
@@ -170,10 +170,10 @@ For Podman, use `:rw,Z` relabeling and `--userns=keep-id` so file ownership matc
 
 ```bash
 podman run --rm \
-  -v "${CLIENT_PATH}:/client:ro" \
+  -v "${CLIENT_PATH}:/client:rw,Z" \
   -v "$(pwd)/data:/opt/turtle/data:rw,Z" \
   --userns=keep-id \
-  ghcr.io/dr1s/tortoise-docker:extractors \
+  ghcr.io/dr1s/tortoise-wow-container:extractors \
   bash -c '
     cd /client &&
     /opt/turtle/bin/mapextractor &&
@@ -240,7 +240,7 @@ Reset the database (deletes characters and accounts):
 ```bash
 docker compose down
 docker volume ls
-docker volume rm tortoise-docker_db-data tortoise-docker_init-marker
+docker volume rm tortoise-wow-container_db-data tortoise-wow-container_init-marker
 docker compose up -d
 ```
 
