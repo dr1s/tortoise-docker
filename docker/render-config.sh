@@ -8,6 +8,7 @@ ETC_DIST="${TURTLE_HOME:-/opt/turtle}/etc.dist"
 DATA_DIR="${DATA_DIR:-/opt/turtle/data}"
 LOGS_DIR="${LOGS_DIR:-/opt/turtle/logs}"
 SQL_DIR="${SQL_DIR:-/opt/turtle/sql}"
+MODULES_ROOT="${MODULES_DIR:-/opt/turtle/modules}"
 
 DB_HOST="${DB_HOST:-db}"
 DB_PORT="${DB_PORT:-3306}"
@@ -61,7 +62,7 @@ if [[ -f "${ETC_DIST}/ahbot.conf.dist" ]]; then
 fi
 
 mkdir -p "${ETC}/modules"
-for module_dir in /src/tortoise-wow/modules/*/; do
+for module_dir in "${MODULES_ROOT}"/*/; do
     [ -d "${module_dir}conf" ] || continue
     for dist_file in "${module_dir}conf/"*.conf.dist; do
         [ -f "${dist_file}" ] || continue

@@ -114,6 +114,20 @@ RUN --mount=type=cache,target=/ccache,sharing=locked \
 RUN mkdir -p /opt/turtle/sql \
     && cp -a sql/create_databases.sql sql/base sql/database_updates /opt/turtle/sql/
 
+# Trim module source to only the runtime directories mangosd needs.
+RUN mkdir -p /opt/turtle/modules \
+    && for module_dir in /src/tortoise-wow/modules/*/; do \
+        module_name="$(basename "${module_dir}")"; \
+        target="/opt/turtle/modules/${module_name}"; \
+        mkdir -p "${target}/conf" "${target}/data/sql"; \
+        if [ -d "${module_dir}/conf" ]; then \
+            cp -a "${module_dir}/conf/." "${target}/conf/"; \
+        fi; \
+        if [ -d "${module_dir}/data/sql" ]; then \
+            cp -a "${module_dir}/data/sql/." "${target}/data/sql/"; \
+        fi; \
+    done
+
 # -----------------------------------------------------------------------------
 # Runtime
 # -----------------------------------------------------------------------------
@@ -161,7 +175,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && useradd --uid 1000 --gid turtle --home-dir /opt/turtle --shell /usr/sbin/nologin turtle
 
 COPY --chown=1000:1000 --from=builder /opt/turtle /opt/turtle
-COPY --chown=1000:1000 --from=builder /src/tortoise-wow/modules /src/tortoise-wow/modules
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/init-db.sh /usr/local/bin/init-db.sh
 COPY docker/render-config.sh /usr/local/bin/render-config.sh
@@ -177,7 +190,12 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
     && mkdir -p /opt/turtle/data /opt/turtle/logs /opt/turtle/run /var/lib/turtle-init \
     && mkdir -p /opt/turtle/etc.dist \
     && cp /opt/turtle/etc/*.conf.dist /opt/turtle/etc.dist/ \
-    && chown -R turtle:turtle /opt/turtle/data /opt/turtle/etc.dist /opt/turtle/run /opt/turtle/logs /var/lib/turtle-init
+    && chown -R turtle:turtle /opt/turtle/data \
+                              /opt/turtle/etc.dist \
+                              /opt/turtle/run \
+                              /opt/turtle/logs \
+                              /opt/turtle/modules \
+                              /var/lib/turtle-init
 
 WORKDIR /opt/turtle/bin
 

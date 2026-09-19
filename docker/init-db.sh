@@ -4,7 +4,7 @@ set -euo pipefail
 MARKER_DIR="${INIT_MARKER_DIR:-/var/lib/turtle-init}"
 MARKER_FILE="${MARKER_DIR}/initialized"
 SQL_ROOT="${SQL_DIR:-/opt/turtle/sql}"
-MODULES_ROOT="${MODULES_DIR:-/src/tortoise-wow/modules}"
+MODULES_ROOT="${MODULES_DIR:-/opt/turtle/modules}"
 
 DB_HOST="${DB_HOST:-db}"
 DB_PORT="${DB_PORT:-3306}"
