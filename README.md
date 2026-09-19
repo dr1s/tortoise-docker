@@ -146,9 +146,27 @@ CLIENT_PATH=/path/to/your/TurtleWoW
 mkdir -p ./data
 
 docker run --rm \
-  -v "${CLIENT_PATH}:/client:ro" \
+  -v "${CLIENT_PATH}:/client" \
   -v "$(pwd)/data:/opt/turtle/data" \
   -u "$(id -u):$(id -g)" \
+  ghcr.io/dr1s/tortoise-docker:extractors \
+  bash -c '
+    cd /client &&
+    /opt/turtle/bin/mapextractor &&
+    /opt/turtle/bin/vmapextractor &&
+    /opt/turtle/bin/vmap_assembler &&
+    /opt/turtle/bin/MoveMapGen &&
+    mv dbc maps vmaps mmaps /opt/turtle/data/
+  '
+```
+
+For Podman, use `:rw,Z` relabeling and `--userns=keep-id` so file ownership matches your host user:
+
+```bash
+podman run --rm \
+  -v "${CLIENT_PATH}:/client:ro" \
+  -v "$(pwd)/data:/opt/turtle/data:rw,Z" \
+  --userns=keep-id \
   ghcr.io/dr1s/tortoise-docker:extractors \
   bash -c '
     cd /client &&
