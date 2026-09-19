@@ -92,7 +92,4 @@ set_conf "${ETC}/realmd.conf" "LoginDatabaseInfo" "\"$(DB_INFO "${DB_LOGIN}")\""
 set_conf "${ETC}/realmd.conf" "RealmServerPort" "${REALM_PORT}"
 set_conf "${ETC}/realmd.conf" "BindIP" "\"${BIND_IP}\""
 
-
-mkdir -p "${LOGS_DIR}"
-
 echo "Configs rendered under ${ETC}"
