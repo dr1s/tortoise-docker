@@ -1,0 +1,29 @@
+# Podman overrides for docker-compose.yml.
+# podman-compose merges this file automatically when it is named
+# podman-compose.override.yml, or you can pass it explicitly:
+#   podman-compose -f docker-compose.yml -f podman-compose.override.yml up -d
+#
+# These overrides add SELinux relabeling (:z / :Z) and userns_mode: keep-id
+# so host bind mounts work correctly under rootless Podman.
+
+services:
+  db:
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./docker/mariadb.cnf:/etc/mysql/conf.d/turtle.cnf:ro,Z
+
+  realmd:
+    userns_mode: keep-id
+    volumes:
+      - ${CONFIG_PATH:-./config}:/opt/turtle/etc:z
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+
+  mangosd:
+    userns_mode: keep-id
+    volumes:
+      - ${DATA_PATH:-./data}:/opt/turtle/data:ro,Z
+      - ${CONFIG_PATH:-./config}:/opt/turtle/etc:z
+      - mangosd-logs:/opt/turtle/logs
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]

@@ -82,6 +82,12 @@ Compose pulls the published images and starts the stack:
 docker compose up -d
 ```
 
+If you use Podman, the provided override file applies the necessary SELinux labels and user namespace settings:
+
+```bash
+podman-compose -f docker-compose.yml -f podman-compose.override.yml up -d
+```
+
 The first start downloads the images (if needed) and imports the world database. This takes several minutes.
 
 Then watch the world server:
