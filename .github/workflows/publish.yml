@@ -93,6 +93,10 @@ jobs:
             type=raw,value=${{ matrix.tag }}-${{ steps.source.outputs.short_sha }}
             type=raw,value=latest,enable=${{ matrix.is_latest && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
 
+      - name: Get number of CPUs
+        id: cpus
+        run: echo "count=$(nproc)" >> "$GITHUB_OUTPUT"
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -104,6 +108,7 @@ jobs:
           target: runtime
           build-args: |
             BUILD_MODULES=${{ matrix.build_modules }}
+            BUILD_JOBS=${{ steps.cpus.outputs.count }}
             USE_EXTRACTORS=OFF
             SOURCE_REPO=https://github.com/tortoise-wow/tortoise-wow.git
             SOURCE_REF=${{ github.event.inputs.source_ref || 'main' }}
